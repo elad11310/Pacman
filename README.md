@@ -21,7 +21,7 @@
 
 ### Big size map:
 
-![pacman2](https://user-images.githubusercontent.com/57447475/145708184-d8f7817c-7f6d-41f4-9a19-3bda81093851.jpeg)
 
+![pacman3](https://user-images.githubusercontent.com/57447475/145708284-63a669a6-0c0e-4445-9492-8ce187c32a99.jpeg)
 
 
