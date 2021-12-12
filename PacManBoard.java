@@ -18,8 +18,8 @@ public class PacManBoard extends JPanel implements ActionListener {
     private int DELAY = 80;  // delay for the actionPreformed Thread
     private static int pacX;
     private static int pacY;
-    private static int StartX = 103;  // start position for pacman
-    private static int StartY = 199;
+    public static int startX = 103;  // start position for pacman
+    public static int startY = 199;
     private JLabel labelScore;
     private int score = 0;
     private int lives;
@@ -269,13 +269,19 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
         creatingPoints();
-        monsters = new ArrayList<>();
-        initMonsters();
+
 
         // this thread is for the moving of Pac-man
-        pacMan pacMan = new pacMan(StartX, StartY);
+        pacMan pacMan = new pacMan(startX, startY);
         Thread t = new Thread(pacMan);
         t.start();
+        //updating the pacman x and y on the ghosts class.
+        Ghost.setCooradinate(startX,startY);
+
+
+
+        monsters = new ArrayList<>();
+        initMonsters();
 
         // this thread is for checking if monsters collide Pac man
         checkEat check = new checkEat();
@@ -318,7 +324,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
                 // vertical
                 if ((y == 0 || y == SCREEN_SIZE - BLOCK_SIZE)) {
-             
+
                     if (y != 0)
                         g2d.drawLine(x + OFFSET, y + BLOCK_SIZE - 1 + OFFSET, x + BLOCK_SIZE - 1 + OFFSET, y + BLOCK_SIZE - 1 + OFFSET);
                     else {
@@ -572,32 +578,33 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
                     // converting pacX and pacY to points on the matrix
-                    int locX = (pacX - 7) / BLOCK_SIZE;
-                    int locY = (pacY - 7) / BLOCK_SIZE;
+                    int locX = (pacX - OFFSET) / BLOCK_SIZE;
+                    int locY = (pacY - OFFSET) / BLOCK_SIZE;
                     Point currentPacPos = points[locY][locX];
-                    HashMap<String, Point> neibhours = pacGraph.neighbors(currentPacPos);
-                    // pacman eating so update the matrix.
+                    // using the interface neighbours function to know if pacman is able to turn up or down or right or left accordingly.
+                    HashMap<String, Point> neighbours = pacGraph.neighbors(currentPacPos);
+                    // pacman is  eating so update the matrix.
                     if (levelData[locY * N_BLOCKS + locX] != -1) {
                         score++;
                     }
                     levelData[locY * N_BLOCKS + locX] = -1;
                     // checking if valid move
-                    if (!neibhours.containsKey("LEFT")) {
+                    if (!neighbours.containsKey("LEFT")) {
                         leftDirection = false;
                         wasLeft = true;
                     }
 
-                    if (!neibhours.containsKey("RIGHT")) {
+                    if (!neighbours.containsKey("RIGHT")) {
                         rightDirection = false;
                         wasRight = true;
                     }
 
-                    if (!neibhours.containsKey("UP")) {
+                    if (!neighbours.containsKey("UP")) {
                         upDirection = false;
                         wasUp = true;
                     }
 
-                    if (!neibhours.containsKey("DOWN")) {
+                    if (!neighbours.containsKey("DOWN")) {
                         downDirection = false;
                         wasDown = true;
                     }
@@ -632,7 +639,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
                     Thread.sleep(200);
 
-                    chaseAggresive.setCooradinate(pacX, pacY);
+
                     Ghost.setCooradinate(pacX, pacY);
                 }
 

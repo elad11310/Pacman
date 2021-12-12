@@ -142,6 +142,14 @@ public class Ghost implements Runnable {
 
     }
 
+    public static int getPacCoordinateX(){
+        return pacX;
+    }
+
+    public static int getPacCoordinateY(){
+        return pacY;
+    }
+
     private Point getPoint(int x, int y) {
         // this function gets x and y on the screen and return the proper cell in the point matrix.
         locX = (x - offset) / PacManBoard.BLOCK_SIZE;
