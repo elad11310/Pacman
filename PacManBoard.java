@@ -318,7 +318,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
                 // vertical
                 if ((y == 0 || y == SCREEN_SIZE - BLOCK_SIZE)) {
-                    // if(x!=0)
+             
                     if (y != 0)
                         g2d.drawLine(x + OFFSET, y + BLOCK_SIZE - 1 + OFFSET, x + BLOCK_SIZE - 1 + OFFSET, y + BLOCK_SIZE - 1 + OFFSET);
                     else {
@@ -338,6 +338,9 @@ public class PacManBoard extends JPanel implements ActionListener {
     }
 
     private void creatingPoints() {
+
+        //creating the matrix point and using the levelData matrix we've just read from the file
+        // 0 means - not walkable point.
         int i, j;
 
         for (i = 0; i < N_BLOCKS; i++) {
@@ -446,13 +449,15 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
     private Point getPoint(int x, int y) {
-        int locX = (x - 7) / PacManBoard.BLOCK_SIZE;
-        int locY = (y - 7) / PacManBoard.BLOCK_SIZE;
+        // this function gets x and y on screen and returns the proper point on the matrix.
+        int locX = (x - OFFSET) / PacManBoard.BLOCK_SIZE;
+        int locY = (y - OFFSET) / PacManBoard.BLOCK_SIZE;
 
         return points[locY][locX];
     }
 
     private void startGhosts() {
+        // starting the ghosts threads.
         for (Ghost g : monsters) {
             Thread t = new Thread(g);
             t.start();
@@ -462,6 +467,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
     private class TAdapter extends KeyAdapter {
 
+        // listener for the key arrows to move the pacman and to know the positions of it to draw it correctly.
 
         @Override
         public void keyPressed(KeyEvent e) {
@@ -510,6 +516,9 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
     private class checkEat implements Runnable {
+        // this thread is for the ghosts collide in the pacman,
+        // after collide we give a sleep of 1000 miles to allow "fade" mode , which for a brief shot of time
+        // the pacman can't be eaten again.
 
         @Override
         public void run() {
