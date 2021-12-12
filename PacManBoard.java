@@ -9,22 +9,23 @@ import java.util.Scanner;
 
 public class PacManBoard extends JPanel implements ActionListener {
 
-    //760 ,800 , 380 ,420  ---- 30 ,15
+
     private final int B_WIDTH = 760; // window width
     private final int B_HEIGHT = 800; // window height
-    public static final int BLOCK_SIZE = 24;
-    public static final int N_BLOCKS = 30;
-    private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
-    private int DELAY = 80; // not final - leaving an option to change the monsters movement speed.
+    public static final int BLOCK_SIZE = 24; // each cell size
+    public static final int N_BLOCKS = 30; // amount of cells in a row
+    private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE; // total amount of cells
+    private int DELAY = 80;  // delay for the actionPreformed Thread
     private static int pacX;
     private static int pacY;
-    private static int StartX = 103;
+    private static int StartX = 103;  // start position for pacman
     private static int StartY = 199;
     private JLabel labelScore;
     private int score = 0;
     private int lives;
-    private boolean isFade = false;
+    private boolean isFade = false; // a variable to know when pacman gets hit.
     private int currentLevel = 1;
+    private final int OFFSET = 7;
 
 
     private boolean leftDirection = false; // for moving left
@@ -38,13 +39,14 @@ public class PacManBoard extends JPanel implements ActionListener {
     private boolean wasLeft;
     private boolean isOpenMoth = true; // for opening and closing the mouth of the pacman while moving.
 
-
+    // each x and y are mapped into point at this matrix.
     private static final Point points[][] = new Point[N_BLOCKS][N_BLOCKS];
-    // private short[] screenData;
+    // array list to hold the hearts images.
     private ArrayList<Image> heartsList;
-
+    // pacman graph which will hold the above matrix.
     private PacManGraph pacGraph;
 
+    //timeer and images objects.
     private Timer timer;
     private Image heart;
     private Image pacUp;
@@ -63,6 +65,7 @@ public class PacManBoard extends JPanel implements ActionListener {
     private Image blueMonster;
 
 
+    // array list to hold the ghost monsters.
     public ArrayList<Ghost> monsters;
     public Ghost redGhost;
     public Ghost pinkGhost;
@@ -70,19 +73,21 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
 
-    // private final short levelData[] ;
+    // the board will be saved in this matrix as we read it from a file .
     private short levelData[];
 
 
 
 
-    public PacManBoard(int stage)  {
+    //constructor
+    public PacManBoard()  {
         initBoard();
 
 
     }
 
 
+    // init board and other stuff.
     private void initBoard()  {
 
 
@@ -98,6 +103,7 @@ public class PacManBoard extends JPanel implements ActionListener {
     }
 
     public void loadLevel() {
+        // this function is used to read the current stage from a file and store it in the levelData matrix.
         int j = 0;
         String stage = "stage" + currentLevel + ".txt";
         boolean isFirstLine = true;
@@ -137,14 +143,16 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
     private void initMonsters() {
+
+        // init the monsters and give them random position on the board
         Point p = generateRandom();
-        redGhost = new Ghost(new chaseAggresive(), p.getY() * BLOCK_SIZE + 7, p.getX() * BLOCK_SIZE + 7, pacGraph, 200, "chase");
+        redGhost = new Ghost(new chaseAggresive(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "chase");
         // generating random position for the static monster :
         p = generateRandom();
-        pinkGhost = new Ghost(new chaseStatic(), p.getY() * BLOCK_SIZE + 7, p.getX() * BLOCK_SIZE + 7, pacGraph, 200, "static");
+        pinkGhost = new Ghost(new chaseStatic(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "static");
         // generating random position for the patrol monster :
         p = generateRandom();
-        blueGhost = new Ghost(new chasePatrol(), p.getY() * BLOCK_SIZE + 7, p.getX() * BLOCK_SIZE + 7, pacGraph, 200, "patrol");
+        blueGhost = new Ghost(new chasePatrol(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "patrol");
 
 
 
@@ -156,6 +164,7 @@ public class PacManBoard extends JPanel implements ActionListener {
     }
 
     private Point generateRandom() {
+        // this function creates a random point on the matrix and checks if it's valid point.
         int startX, endX;
         do {
             startX = (int) (Math.random() * N_BLOCKS);
@@ -259,7 +268,6 @@ public class PacManBoard extends JPanel implements ActionListener {
         timer.start();
 
 
-        //locateDots();
         creatingPoints();
         monsters = new ArrayList<>();
         initMonsters();
@@ -269,7 +277,7 @@ public class PacManBoard extends JPanel implements ActionListener {
         Thread t = new Thread(pacMan);
         t.start();
 
-        // this thred is for checking if monsters collide Pac man
+        // this thread is for checking if monsters collide Pac man
         checkEat check = new checkEat();
         Thread t2 = new Thread(check);
         t2.start();
@@ -406,7 +414,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
         // drawing monsters
-        // System.out.println(redGhost.getX() + " "  + redGhost.getY());
+
 
         g.drawImage(redMonsterLeft, redGhost.getX(), redGhost.getY(), this);
         g.drawImage(pinkMonster, pinkGhost.getX(), pinkGhost.getY(), this);
@@ -422,19 +430,7 @@ public class PacManBoard extends JPanel implements ActionListener {
             heartX += 25;
 
         }
-        //g.drawImage(redMonsterLeft, 200 ,200, this);
 
-        //g.drawImage(redMonsterDown, pinkGhost.x , pinkGhost.y , this);
-        //  g.drawImage(redMonsterLeft, pacX-60, pacY-100, this);
-        // painting the dots
-        // g.setColor(Color.white);
-//        for (int i = 0; i < dots.length; i++) {
-//            if (dots[i].x >= 0)
-//                g.drawOval(dots[i].x, dots[i].y, 10, 10);
-//        }
-
-        // System.out.println("PacX : " + pacX + "PacY" + pacY);
-        // System.out.println("PacX : " + redGhost.x + "PacY" + redGhost.y);
 
 
     }
@@ -443,7 +439,6 @@ public class PacManBoard extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        //movePacMan(); i used a Thread i did , it works also.
         repaint();
 
 
@@ -526,7 +521,7 @@ public class PacManBoard extends JPanel implements ActionListener {
                     Point ghost = getPoint(g.getX(), g.getY());
 
 
-                    if (inRadious(pacX, pacY, (ghost.getY() * BLOCK_SIZE + 7), (ghost.getX() * BLOCK_SIZE + 7), 15)) {
+                    if (inRadius(pacX, pacY, (ghost.getY() * BLOCK_SIZE + 7), (ghost.getX() * BLOCK_SIZE + 7), 15)) {
 
 
 
@@ -666,7 +661,7 @@ public class PacManBoard extends JPanel implements ActionListener {
         return inGame;
     }
 
-    public boolean inRadious(int pX, int pY, int gX, int gY, int offset) {
+    public boolean inRadius(int pX, int pY, int gX, int gY, int offset) {
 
 
         if (Math.abs(pX - gX) <= offset && Math.abs(pY - gY) <= offset) {

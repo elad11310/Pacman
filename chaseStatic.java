@@ -9,6 +9,8 @@ public class chaseStatic implements chaseBehaviour {
 
     @Override
     public ArrayList<Point> chase(Point start, IGraph graph) {
+
+        // saving the first start point , to return to this point when pacman gets out of the  radius.
         if (isFirst) {
             saveStart = start;
             isFirst = false;

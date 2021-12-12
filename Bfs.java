@@ -6,9 +6,13 @@ public class Bfs {
     private Point end;
     private IGraph graph;
 
+    // queue for holding the points we need to visit
     Queue<Point> q;
+    // blacked set to save the points we visited and to know we can't visit again
     HashSet<Point> blackend;
+    // previous map to save the current's point father.
     HashMap<Point, Point> previous;
+    // path to destination to return
     ArrayList<Point> path;
 
 
@@ -34,7 +38,7 @@ public class Bfs {
 
             Point current = q.poll();
 
-            // reached the desintation
+            // reached the destination , start creating the path from back to start and reverse it.
             if (current == end) {
                 path.add(end);
 
@@ -46,6 +50,7 @@ public class Bfs {
                 Collections.reverse(path);
                 break;
             } else {
+                // getting the current point's neighbours.
                 HashMap<String, Point> neighbors = graph.neighbors(current);
                 for (Point p : neighbors.values()) {
                     if (blackend.contains(p)) {

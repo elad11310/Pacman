@@ -9,6 +9,7 @@ public class Ghost implements Runnable {
     Point[][] points;
     private int delay;
     private int locX, locY;
+    private int offset = 7;
     private HashMap<String, chaseBehaviour> states;
     public static int pacX, pacY;
 
@@ -34,19 +35,22 @@ public class Ghost implements Runnable {
         setX(x);
         this.chaseBehaviour = chaseBehaviour;
         this.graph = graph;
+        // this path is for the points path to reach the destination.
         path = new ArrayList<>();
         this.delay = delay;
         states = new HashMap<>();
         states.put(behaviour,chaseBehaviour);
 
-        // try to change it in the interface.
+        // getting the points matrix.
         points = (Point[][]) graph.getGraph();
 
 
 
     }
 
-    public boolean inRadious(Point ghost, Point pac, int offset) {
+    public boolean inRadius(Point ghost, Point pac, int offset) {
+
+        // this function gets two points on the matrix and checks if one is in the second's radius
         int i, j;
 
 
@@ -78,11 +82,13 @@ public class Ghost implements Runnable {
             while (PacManBoard.getInGame() ) {
 
                 // getting ghost position
-               // if(PacManBoard.ghostInAction) {
-                    Point ghostPos = getPoint(ghostX, ghostY);
-                    Point pacPos = getPoint(pacX, pacY);
 
-                    if (states.containsKey("static") && inRadious(ghostPos, pacPos, 4)) {
+                    Point ghostPos = getPoint(ghostX, ghostY);
+                // getting pacman position
+                    Point pacPos = getPoint(pacX, pacY);
+                    //checking if the current ghost is in static mode and if pacman in it's radius.
+                    //if so change the behaviour to aggressive and chase.
+                    if (states.containsKey("static") && inRadius(ghostPos, pacPos, 4)) {
                         if (states.containsKey("chase")) {
                             this.chaseBehaviour = states.get("chase");
                         } else {
@@ -90,15 +96,15 @@ public class Ghost implements Runnable {
                             this.chaseBehaviour = states.get("chase");
                         }
                     }
-                    if (!inRadious(ghostPos, pacPos, 4) && states.containsKey("static")) {
+                    // if it's not in radius and the current ghost has static mode, so return it to static mode.
+                    if (!inRadius(ghostPos, pacPos, 4) && states.containsKey("static")) {
                         this.chaseBehaviour = states.get("static");
                     }
 
-
+                    // getting the path for the current behaviour
                     path = this.chaseBehaviour.chase(ghostPos, graph);
                     move();
-               // }
-                // Thread.sleep(400);
+
 
             }
         } catch (
@@ -111,6 +117,8 @@ public class Ghost implements Runnable {
 
 
     public void move() {
+
+        // getting the current path list and move.
 
         for (Point p : path) {
             ghostX = p.getY() * PacManBoard.BLOCK_SIZE + 7;
@@ -127,14 +135,17 @@ public class Ghost implements Runnable {
     }
 
     public static void setCooradinate(int x, int y) {
+
+        // update the pac x and y to know where it is at any time.
         pacX = x;
         pacY = y;
 
     }
 
     private Point getPoint(int x, int y) {
-        locX = (x - 7) / PacManBoard.BLOCK_SIZE;
-        locY = (y - 7) / PacManBoard.BLOCK_SIZE;
+        // this function gets x and y on the screen and return the proper cell in the point matrix.
+        locX = (x - offset) / PacManBoard.BLOCK_SIZE;
+        locY = (y - offset) / PacManBoard.BLOCK_SIZE;
 
         return points[locY][locX];
     }

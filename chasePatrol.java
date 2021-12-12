@@ -12,12 +12,15 @@ public class chasePatrol implements chaseBehaviour {
     @Override
     public ArrayList<Point> chase(Point start, IGraph graph) {
         this.graph = graph;
+        // check if it's the first time , if so generate random point to start patrolling
         if (!isFirst) {
             end = destination();
             isFirst = true;
+            // saving the start point
             saveStart = start;
         }
 
+        // if we reached the destination , we want to come back to the start point.
         if (start == end) {
             end = saveStart;
             saveStart = start;
@@ -29,6 +32,7 @@ public class chasePatrol implements chaseBehaviour {
 
     @Override
     public Point destination() {
+        // this function generates random point and return it.
         Point[][] points = (Point[][]) graph.getGraph();
         int startX, endX;
         do {

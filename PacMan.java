@@ -10,7 +10,7 @@ public class PacMan extends JFrame {
 
     private void initGUI() throws IOException {
 
-        add(new PacManBoard(1)); // setting the board
+        add(new PacManBoard());
 
         setResizable(false); // cant resize the window
         pack(); // The pack() method is defined in Window class in Java and it sizes the frame so that all its contents are at or above their preferred sizes.

@@ -1,6 +1,8 @@
 public class Point {
 
 
+    // normal class point contains x and y and a boolean if the current point is walkable.
+
     private int x;
     private int y;
     boolean isOk;
