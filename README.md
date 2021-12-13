@@ -1,6 +1,6 @@
 # Pacman Game:
 
-### Old and good Pacman game , written in java using BFS algorithm for ghosts to track after the pacman.
+### Old and good Pacman game , written in java using BFS algorithm for ghosts to track the pacman.
 ### In addition using threads for each ghost to move independently , each ghost object implements an interface of behaviour (aggressive , patrol or static).
 
 * Aggressive - the ghost will constantly track the pacman in the fastest path using BFS.
