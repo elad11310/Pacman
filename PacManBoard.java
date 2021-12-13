@@ -1,10 +1,9 @@
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class PacManBoard extends JPanel implements ActionListener {
@@ -16,16 +15,20 @@ public class PacManBoard extends JPanel implements ActionListener {
     public static final int N_BLOCKS = 30; // amount of cells in a row
     private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE; // total amount of cells
     private int DELAY = 80;  // delay for the actionPreformed Thread
-    private static int pacX;
+    private static int pacX; // the current pacman x
     private static int pacY;
     public static int startX = 103;  // start position for pacman
     public static int startY = 199;
     private JLabel labelScore;
     private int score = 0;
+    private int numOfSpecialdots = 5; // special dot - dot a pacman can take and then be able to eat the ghosts for a short certain of time.
     private int lives;
-    private boolean isFade = false; // a variable to know when pacman gets hit.
     private int currentLevel = 1;
     private final int OFFSET = 7;
+    private boolean pacmanFade = false; // to know when pacman gets hit.
+    private boolean ghostFading = false; // to know when ghosts are vulnerable so pacman can hit them.
+    private float alpha = 1f; // for fading image when ghost can be eaten.
+    boolean fadeIn = true; // to know if we fade in the image or fade out.
 
 
     private boolean leftDirection = false; // for moving left
@@ -34,7 +37,7 @@ public class PacManBoard extends JPanel implements ActionListener {
     private boolean downDirection = false; // for moving down
     private static boolean inGame = true; // to know if the game still running
     private boolean wasUp; // after we moved up , want the angle of the mouth to stay up even if we stopped moving
-    private boolean wasDown;
+    private boolean wasDown; // to remember the last direction of the pacman
     private boolean wasRight;
     private boolean wasLeft;
     private boolean isOpenMoth = true; // for opening and closing the mouth of the pacman while moving.
@@ -46,8 +49,9 @@ public class PacManBoard extends JPanel implements ActionListener {
     // pacman graph which will hold the above matrix.
     private PacManGraph pacGraph;
 
-    //timeer and images objects.
+    //timer and images objects.
     private Timer timer;
+    private Timer fadeTimer;
     private Image heart;
     private Image pacUp;
     private Image pacDown;
@@ -65,22 +69,21 @@ public class PacManBoard extends JPanel implements ActionListener {
     private Image blueMonster;
 
 
+    // a map to hold the ghost image and the ghost object .
+    public HashMap<Image, Ghost> monsters;
     // array list to hold the ghost monsters.
-    public ArrayList<Ghost> monsters;
+    public ArrayList<Point> specialDots;
     public Ghost redGhost;
     public Ghost pinkGhost;
     public Ghost blueGhost;
-
 
 
     // the board will be saved in this matrix as we read it from a file .
     private short levelData[];
 
 
-
-
     //constructor
-    public PacManBoard()  {
+    public PacManBoard() {
         initBoard();
 
 
@@ -88,7 +91,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
 
     // init board and other stuff.
-    private void initBoard()  {
+    private void initBoard() {
 
 
         addKeyListener(new PacManBoard.TAdapter());
@@ -100,11 +103,13 @@ public class PacManBoard extends JPanel implements ActionListener {
         loadLabels();
         initGame();
 
+
     }
 
     public void loadLevel() {
         // this function is used to read the current stage from a file and store it in the levelData matrix.
         int j = 0;
+        int size = 0;
         String stage = "stage" + currentLevel + ".txt";
         boolean isFirstLine = true;
         try {
@@ -115,7 +120,9 @@ public class PacManBoard extends JPanel implements ActionListener {
                 String data = myReader.nextLine();
                 if (isFirstLine) {
                     isFirstLine = false;
-                    levelData = new short [Integer.parseInt(data)];
+                    levelData = new short[Integer.parseInt(data)];
+                    // saving the size of the array
+                    size = Integer.parseInt((data));
 
                 } else {
                     for (int i = 0; i < data.length(); i++) {
@@ -130,13 +137,32 @@ public class PacManBoard extends JPanel implements ActionListener {
             }
 
 
-
             myReader.close();
         } catch (FileNotFoundException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
 
+
+        /// generate  random dots for the special dot.
+        // 1 in the matrix means special dot
+        specialDots = new ArrayList<>();
+        int rand;
+        rand = (int) (Math.random() * size);
+        for (j = 0; j < numOfSpecialdots; j++) {
+
+            while (levelData[rand] == 1) {
+                rand = (int) (Math.random() * size);
+            }
+
+            levelData[rand] = 1;
+            specialDots.add(new Point(rand / N_BLOCKS, rand % N_BLOCKS, true));
+        }
+
+        // starting the thread that in charge of the eating of special dots and the effect comes with it
+        checkEatSpecialDot check = new checkEatSpecialDot();
+        Thread t = new Thread(check);
+        t.start();
 
 
     }
@@ -146,19 +172,18 @@ public class PacManBoard extends JPanel implements ActionListener {
 
         // init the monsters and give them random position on the board
         Point p = generateRandom();
-        redGhost = new Ghost(new ChaseAggressive(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "chase");
+        redGhost = new Ghost(new ChaseAggressive(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 250, "chase");
         // generating random position for the static monster :
         p = generateRandom();
-        pinkGhost = new Ghost(new ChaseStatic(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "static");
+        pinkGhost = new Ghost(new ChaseStatic(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 250, "static");
         // generating random position for the patrol monster :
         p = generateRandom();
         blueGhost = new Ghost(new ChasePatrol(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "patrol");
 
 
-
-        monsters.add(redGhost);
-        monsters.add(pinkGhost);
-        monsters.add(blueGhost);
+        monsters.put(redMonsterLeft, redGhost);
+        monsters.put(pinkMonster, pinkGhost);
+        monsters.put(blueMonster, blueGhost);
 
         startGhosts();
     }
@@ -178,9 +203,9 @@ public class PacManBoard extends JPanel implements ActionListener {
     private void loadLabels() {
         labelScore = new JLabel("Score");
         this.setLayout(null);
-        labelScore.setBounds(10, B_HEIGHT - 60, 70, 40);
+        labelScore.setBounds(10, B_HEIGHT - 35, 70, 40);
         labelScore.setForeground(Color.RED);
-        this.add(labelScore);
+
 
         heartsList = new ArrayList<>();
         lives = 3;
@@ -259,6 +284,7 @@ public class PacManBoard extends JPanel implements ActionListener {
         heart = iid.getImage();
         heart = heart.getScaledInstance(BLOCK_SIZE, BLOCK_SIZE, Image.SCALE_DEFAULT);
 
+
     }
 
 
@@ -275,12 +301,12 @@ public class PacManBoard extends JPanel implements ActionListener {
         pacMan pacMan = new pacMan(startX, startY);
         Thread t = new Thread(pacMan);
         t.start();
+
         //updating the pacman x and y on the ghosts class.
-        Ghost.setCooradinate(startX,startY);
+        Ghost.setCooradinate(startX, startY);
 
 
-
-        monsters = new ArrayList<>();
+        monsters = new HashMap<>();
         initMonsters();
 
         // this thread is for checking if monsters collide Pac man
@@ -307,6 +333,13 @@ public class PacManBoard extends JPanel implements ActionListener {
                 // if it's an obstacle
                 if ((levelData[i] == 0)) {
                     g2d.fillRect(x + OFFSET, y + OFFSET, BLOCK_SIZE, BLOCK_SIZE);
+                }
+
+                // special dot
+                if (levelData[i] == 1) {
+                    g2d.setColor(new Color(255, 255, 255));
+                    g2d.fillOval(x + OFFSET * 2, y + OFFSET * 2, BLOCK_SIZE / 2, BLOCK_SIZE / 2);
+                    g2d.setColor(new Color(0, 72, 251));
                 }
 
                 // for corners
@@ -363,73 +396,80 @@ public class PacManBoard extends JPanel implements ActionListener {
         pacGraph = new PacManGraph(points);
 
 
-
-
     }
 
+    private Image pacDirectionOpenMouth(){
+        if (upDirection)
+           return pacUp;
+        else if (downDirection)
+           return pacDown;
+        else if (rightDirection)
+          return pacRight;
+        else if (leftDirection)
+          return pacLeft;
+        else if (wasUp)
+           return pacUp;
+        else if (wasDown)
+           return pacDown;
+        else if (wasRight)
+           return pacRight;
+        else if (wasLeft)
+            return  pacLeft;
 
+        return pacLeft;
+    }
+    private Image pacDirectionClosedMouth(){
+        if (upDirection)
+            return pacMovingUp;
+        else if (downDirection)
+            return pacMovingDown;
+        else if (rightDirection)
+            return pacMovingRight;
+        else if (leftDirection)
+            return pacMovingLeft;
+        else if (wasUp)
+            return pacUp;
+        else if (wasDown)
+            return pacDown;
+        else if (wasRight)
+            return pacRight;
+        else if (wasLeft)
+            return  pacLeft;
+
+        return pacLeft;
+    }
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         Graphics2D g2d = (Graphics2D) g;
         // drawing the obstacles.
         drawLevel(g2d);
 
 
+
+
         // for the angle of the mouth of the pac-man pic.
         // if its open
         if (isOpenMoth) {
-            if (upDirection)
-                g.drawImage(pacUp, pacX, pacY, this);
-            else if (downDirection)
-                g.drawImage(pacDown, pacX, pacY, this);
-            else if (rightDirection)
-                g.drawImage(pacRight, pacX, pacY, this);
-            else if (leftDirection)
-                g.drawImage(pacLeft, pacX, pacY, this);
-            else if (wasUp)
-                g.drawImage(pacUp, pacX, pacY, this);
-            else if (wasDown)
-                g.drawImage(pacDown, pacX, pacY, this);
-            else if (wasRight)
-                g.drawImage(pacRight, pacX, pacY, this);
-            else if (wasLeft)
-                g.drawImage(pacLeft, pacX, pacY, this);
-
+            g.drawImage(pacDirectionOpenMouth(), pacX, pacY, this);
             isOpenMoth = false;
         }
         // if its closed
         else {
-
-            if (upDirection)
-                g.drawImage(pacMovingUp, pacX, pacY, this);
-            else if (downDirection)
-                g.drawImage(pacMovingDown, pacX, pacY, this);
-            else if (rightDirection)
-                g.drawImage(pacMovingRight, pacX, pacY, this);
-            else if (leftDirection)
-                g.drawImage(pacMovingLeft, pacX, pacY, this);
-            else if (wasUp)
-                g.drawImage(pacUp, pacX, pacY, this);
-            else if (wasDown)
-                g.drawImage(pacDown, pacX, pacY, this);
-            else if (wasRight)
-                g.drawImage(pacRight, pacX, pacY, this);
-            else if (wasLeft)
-                g.drawImage(pacLeft, pacX, pacY, this);
-
+            g.drawImage(pacDirectionClosedMouth(), pacX, pacY, this);
             isOpenMoth = true;
         }
 
 
         // drawing monsters
 
+        if (!ghostFading) {
+            for (Map.Entry<Image, Ghost> ghost : monsters.entrySet()) {
+                g.drawImage(ghost.getKey(), ghost.getValue().getX(), ghost.getValue().getY(), this);
+            }
+        }
 
-        g.drawImage(redMonsterLeft, redGhost.getX(), redGhost.getY(), this);
-        g.drawImage(pinkMonster, pinkGhost.getX(), pinkGhost.getY(), this);
-        g.drawImage(blueMonster, blueGhost.getX(), blueGhost.getY(), this);
-
-        labelScore.setText("Score " + score);
 
         //painting hearts
         int heartX = 80;
@@ -440,8 +480,60 @@ public class PacManBoard extends JPanel implements ActionListener {
 
         }
 
+        labelScore.setText("Score " + score);
+        g.drawString(labelScore.getText(), labelScore.getX(), labelScore.getY());
+
+        if (ghostFading ) {
+            startFadeTimer();
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
+                    alpha));
+            doFade(g2d);
 
 
+        }
+
+
+    }
+
+    private void doFade(Graphics g2d) {
+        float add = 0.005f;
+        float alphaOffset =  0.005000812f;
+
+        if (alpha == alphaOffset) {
+            fadeIn = fadeIn == true ? false : true;
+            fadeTimer.stop();
+            startFadeTimer();
+
+
+        }
+
+        if (fadeIn) {
+
+            alpha -= add;
+        } else {
+
+            alpha += add;
+        }
+
+        // change to fade mode
+        if (alpha == 1) {
+            fadeIn = fadeIn == true ? false : true;
+            fadeTimer.stop();
+            startFadeTimer();
+        }
+
+        if (ghostFading) {
+            for (Map.Entry<Image, Ghost> ghost : monsters.entrySet()) {
+                g2d.drawImage(ghost.getKey(), ghost.getValue().getX(), ghost.getValue().getY(), this);
+            }
+        }
+
+        repaint();
+    }
+
+    public void startFadeTimer() {
+        fadeTimer = new Timer(800, this);
+        fadeTimer.start();
     }
 
 
@@ -464,7 +556,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
     private void startGhosts() {
         // starting the ghosts threads.
-        for (Ghost g : monsters) {
+        for (Ghost g : monsters.values()) {
             Thread t = new Thread(g);
             t.start();
         }
@@ -525,28 +617,33 @@ public class PacManBoard extends JPanel implements ActionListener {
         // this thread is for the ghosts collide in the pacman,
         // after collide we give a sleep of 1000 miles to allow "fade" mode , which for a brief shot of time
         // the pacman can't be eaten again.
+        //if the ghosts are in fade mode ( can happen if pacman takes special dot), so we check if pacman hits them.
 
         @Override
         public void run() {
 
 
             while (true) {
-                for (Ghost g : monsters) {
+                for (Map.Entry<Image, Ghost> g : monsters.entrySet()) {
 
-                    Point ghost = getPoint(g.getX(), g.getY());
-
-
-                    if (inRadius(pacX, pacY, (ghost.getY() * BLOCK_SIZE + 7), (ghost.getX() * BLOCK_SIZE + 7), 15)) {
+                    Point ghost = getPoint(g.getValue().getX(), g.getValue().getY());
 
 
+                    if (inRadius(pacX, pacY, (ghost.getY() * BLOCK_SIZE + OFFSET), (ghost.getX() * BLOCK_SIZE + OFFSET), 15)) {
 
-                        if (heartsList.size() > 0 && !isFade) {
-                            isFade = true;
+                        // pacman eats the ghost
+                        if (ghostFading) {
+                            monsters.remove(g.getKey());
+                            break;
+                        }
+                        //other wise ghost eats pacman
+                        if (heartsList.size() > 0 && !pacmanFade) {
                             heartsList.remove(0);
+                            pacmanFade = true;
 
                             try {
                                 Thread.sleep(1000);
-                                isFade = false;
+                                pacmanFade = false;
 
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
@@ -557,6 +654,39 @@ public class PacManBoard extends JPanel implements ActionListener {
 
                 }
 
+            }
+
+        }
+    }
+
+    private class checkEatSpecialDot implements Runnable {
+        // this thread is for the pacman collide in the special dots,
+        // after collide we give a sleep of 1000 miles to allow "fade" mode  for ghosts, which for a brief shot of time
+        // the pacman can hit them.
+
+        @Override
+        public void run() {
+
+
+            while (true) {
+
+                for (Point p : specialDots) {
+
+                    if (inRadius(pacX, pacY, (p.getY() * BLOCK_SIZE + OFFSET), (p.getX() * BLOCK_SIZE + OFFSET), 3)) {
+                        ghostFading = true;
+
+                        try {
+                            Thread.sleep(5000);
+                            ghostFading = false;
+                            specialDots.remove(p);
+                            break;
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
             }
 
         }

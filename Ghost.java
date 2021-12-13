@@ -102,7 +102,10 @@ public class Ghost implements Runnable {
 
                 // getting the path for the current behaviour
                 path = this.chaseBehaviour.chase(ghostPos, graph);
-                move();
+                if (path.size() > 1)
+                    move(path.get(1));
+                else
+                    move(path.get(0));
 
 
             }
@@ -115,23 +118,23 @@ public class Ghost implements Runnable {
     }
 
 
-    public void move() {
+    public void move(Point p) {
 
         // getting the current path list and move.
 
-        for (Point p : path) {
-            ghostX = p.getY() * PacManBoard.BLOCK_SIZE + offset;
-            ghostY = p.getX() * PacManBoard.BLOCK_SIZE + offset;
+        //for (Point p : path) {
+        ghostX = p.getY() * PacManBoard.BLOCK_SIZE + offset;
+        ghostY = p.getX() * PacManBoard.BLOCK_SIZE + offset;
 
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        //}
+
         path.clear();
-
-
     }
 
     public static void setCooradinate(int x, int y) {
