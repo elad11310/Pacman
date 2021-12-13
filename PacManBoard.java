@@ -61,10 +61,7 @@ public class PacManBoard extends JPanel implements ActionListener {
     private Image pacMovingDown;
     private Image pacMovingRight;
     private Image pacMovingLeft;
-    private Image redMonsterDown;
-    private Image redMonsterUp;
-    private Image redMonsterLeft;
-    private Image redMonsterRight;
+    private Image redMonster;
     private Image pinkMonster;
     private Image blueMonster;
 
@@ -181,7 +178,7 @@ public class PacManBoard extends JPanel implements ActionListener {
         blueGhost = new Ghost(new ChasePatrol(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "patrol");
 
 
-        monsters.put(redMonsterLeft, redGhost);
+        monsters.put(redMonster, redGhost);
         monsters.put(pinkMonster, pinkGhost);
         monsters.put(blueMonster, blueGhost);
 
@@ -254,21 +251,10 @@ public class PacManBoard extends JPanel implements ActionListener {
 
         // monsters images
 
-        iid = new ImageIcon("images/redU.png");
-        redMonsterUp = iid.getImage();
-        redMonsterUp = redMonsterUp.getScaledInstance(BLOCK_SIZE, BLOCK_SIZE, Image.SCALE_DEFAULT);
-
-        iid = new ImageIcon("images/redD.png");
-        redMonsterDown = iid.getImage();
-        redMonsterDown = redMonsterDown.getScaledInstance(BLOCK_SIZE, BLOCK_SIZE, Image.SCALE_DEFAULT);
-
-        iid = new ImageIcon("images/redR.png");
-        redMonsterRight = iid.getImage();
-        redMonsterRight = redMonsterRight.getScaledInstance(BLOCK_SIZE, BLOCK_SIZE, Image.SCALE_DEFAULT);
 
         iid = new ImageIcon("images/test.png");
-        redMonsterLeft = iid.getImage();
-        redMonsterLeft = redMonsterLeft.getScaledInstance(BLOCK_SIZE, BLOCK_SIZE, Image.SCALE_DEFAULT);
+        redMonster = iid.getImage();
+        redMonster = redMonster.getScaledInstance(BLOCK_SIZE, BLOCK_SIZE, Image.SCALE_DEFAULT);
 
         iid = new ImageIcon("images/purpleGhost.png");
         pinkMonster = iid.getImage();
