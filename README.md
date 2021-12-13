@@ -25,3 +25,12 @@
 ![pacman3](https://user-images.githubusercontent.com/57447475/145708284-63a669a6-0c0e-4445-9492-8ce187c32a99.jpeg)
 
 
+
+### Update : 
+* Added special dots which are bigger then normal one's and if pacman eats them , the ghosts are in fade mode and can be eaten by pacman.
+
+
+![WhatsApp Image 2021-12-13 at 18 20 53](https://user-images.githubusercontent.com/57447475/145849325-354bd0f1-09ec-4cee-bc28-316b06be01c9.jpeg)
+
+
+
