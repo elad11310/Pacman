@@ -11,7 +11,7 @@
 
 ### By using interfaces , threads and BFS algorithm iv'e got a nice old fashion pacman game.
 
-### The code is generic and allows me to change maps size to be able to create levels.
+### There is an option to change map size and make different levels.
 
 ### Small size map:
 
