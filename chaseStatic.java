@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class chaseStatic implements chaseBehaviour {
+public class ChaseStatic implements IChaseBehaviour {
 
 
     private Point saveStart;

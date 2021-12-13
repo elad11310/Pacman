@@ -146,13 +146,13 @@ public class PacManBoard extends JPanel implements ActionListener {
 
         // init the monsters and give them random position on the board
         Point p = generateRandom();
-        redGhost = new Ghost(new chaseAggresive(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "chase");
+        redGhost = new Ghost(new ChaseAggressive(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "chase");
         // generating random position for the static monster :
         p = generateRandom();
-        pinkGhost = new Ghost(new chaseStatic(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "static");
+        pinkGhost = new Ghost(new ChaseStatic(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "static");
         // generating random position for the patrol monster :
         p = generateRandom();
-        blueGhost = new Ghost(new chasePatrol(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "patrol");
+        blueGhost = new Ghost(new ChasePatrol(), p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 200, "patrol");
 
 
 

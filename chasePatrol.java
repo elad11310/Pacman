@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class chasePatrol implements chaseBehaviour {
+public class ChasePatrol implements IChaseBehaviour {
 
 
     private IGraph graph;

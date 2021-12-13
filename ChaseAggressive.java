@@ -5,7 +5,7 @@ import java.util.*;
 
 // TODO check why bfs doesnt finish.
 
-public class chaseAggresive implements chaseBehaviour {
+public class ChaseAggressive implements IChaseBehaviour {
 
     int offset=7;
 
