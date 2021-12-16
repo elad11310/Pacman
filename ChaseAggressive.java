@@ -15,8 +15,8 @@ public class ChaseAggressive implements IChaseBehaviour {
 
     @Override
     public ArrayList<Point> chase(Point start, IGraph graph) {
-        pacX = Ghost.getPacCoordinateX();
-        pacY = Ghost.getPacCoordinateY();
+        pacX = PacManBoard.getPacX();
+        pacY = PacManBoard.getPacY();
         this.graph = graph;
         // checking the destination (in this case it's the pacman location)
         Point end = destination();
@@ -27,7 +27,6 @@ public class ChaseAggressive implements IChaseBehaviour {
     @Override
     public Point destination() {
         // getting pacman coordinates on the screen and returns the proper point on the matrix.
-       // System.out.println(pacX + " " + pacY);
         int locX = (pacX - offset) / PacManBoard.BLOCK_SIZE;
         int locY = (pacY - offset) / PacManBoard.BLOCK_SIZE;
         Point pacPos = (Point) graph.getGraph()[locY][locX];

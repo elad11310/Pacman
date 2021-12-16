@@ -12,7 +12,7 @@ public class Point {
         this.x = x;
         this.y = y;
         this.isOk = isOk;
-        //neighbours = new HashMap<>();
+
     }
 
     public int getX() {

@@ -30,6 +30,8 @@ public class Ghost implements Runnable {
         return ghostY;
     }
 
+
+
     public Ghost(IChaseBehaviour chaseBehaviour, int x, int y, IGraph graph, int delay, String behaviour) {
         setY(y);
         setX(x);
@@ -40,6 +42,7 @@ public class Ghost implements Runnable {
         this.delay = delay;
         states = new HashMap<>();
         states.put(behaviour, chaseBehaviour);
+       // this.isRunning = isRunning;
 
         // getting the points matrix.
         points = (Point[][]) graph.getGraph();
@@ -84,6 +87,8 @@ public class Ghost implements Runnable {
 
                 Point ghostPos = getPoint(ghostX, ghostY);
                 // getting pacman position
+                pacX = PacManBoard.getPacX();
+                pacY = PacManBoard.getPacY();
                 Point pacPos = getPoint(pacX, pacY);
                 //checking if the current ghost is in static mode and if pacman in it's radius.
                 //if so change the behaviour to aggressive and chase.
@@ -120,9 +125,8 @@ public class Ghost implements Runnable {
 
     public void move(Point p) {
 
-        // getting the current path list and move.
+        // getting the current path list and move 1 step and then make bfs again to update the path
 
-        //for (Point p : path) {
         ghostX = p.getY() * PacManBoard.BLOCK_SIZE + offset;
         ghostY = p.getX() * PacManBoard.BLOCK_SIZE + offset;
 
@@ -132,26 +136,11 @@ public class Ghost implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //}
+
 
         path.clear();
     }
 
-    public static void setCooradinate(int x, int y) {
-
-        // update the pac x and y to know where it is at any time.
-        pacX = x;
-        pacY = y;
-
-    }
-
-    public static int getPacCoordinateX() {
-        return pacX;
-    }
-
-    public static int getPacCoordinateY() {
-        return pacY;
-    }
 
     private Point getPoint(int x, int y) {
         // this function gets x and y on the screen and return the proper cell in the point matrix.
