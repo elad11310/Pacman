@@ -1,5 +1,3 @@
-
-
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
@@ -12,6 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PacManBoard extends JPanel implements ActionListener {
 
 
+    // when ghosts fading , need to run away .
+    // add levels.
+    // 760(+40) , 800(+80) ,30
     private final int B_WIDTH = 760; // window width
     private final int B_HEIGHT = 800; // window height
     public static final int BLOCK_SIZE = 24; // each cell size
@@ -32,7 +33,9 @@ public class PacManBoard extends JPanel implements ActionListener {
     private boolean ghostFading = false; // to know when ghosts are vulnerable so pacman can hit them.
     private float alpha = 1f; // for fading image when ghost can be eaten.
     boolean fadeIn = true; // to know if we fade in the image or fade out.
+    // volatile because more then 1 thread is using this variable and need to be synchronized
     private volatile int ghostSize = 4;
+    private int ghostsNumber = 4;
 
 
     private boolean leftDirection = false; // for moving left
@@ -172,8 +175,10 @@ public class PacManBoard extends JPanel implements ActionListener {
 
     private void initMonsters() {
 
-
-        while (monsters.size() < 4) {
+        int delay = 250;
+        //ghostsNumber depends on monstersImage arrayList size
+        while (monsters.size() != ghostsNumber) {
+            delay = 250;
             Image monsterImage;
             // generate random point on screen
             Point p = generateRandomPoint(N_BLOCKS);
@@ -183,6 +188,7 @@ public class PacManBoard extends JPanel implements ActionListener {
             switch (rand) {
                 case 0:
                     chaseBehaviour = new ChaseAggressive();
+                    delay = 300;
                     break;
 
                 case 1:
@@ -197,16 +203,19 @@ public class PacManBoard extends JPanel implements ActionListener {
                     chaseBehaviour = null;
             }
             String behaviour = stringBehaviours[rand];
-            Ghost ghost = new Ghost(chaseBehaviour, p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, 250, behaviour);
+            System.out.println(behaviour);
+            Ghost ghost = new Ghost(chaseBehaviour, p.getY() * BLOCK_SIZE + OFFSET, p.getX() * BLOCK_SIZE + OFFSET, pacGraph, delay, behaviour);
             // we don't want 2 monsters or more with the same color.
             do {
-                monsterImage = monstersImages.get(generateRandomNumber(ghostSize));
+                monsterImage = monstersImages.get(generateRandomNumber(ghostsNumber));
 
             } while (monsters.containsKey(monsterImage));
             monsters.put(monsterImage, ghost);
+            System.out.println(monsters.size());
             startGhosts(ghost);
 
         }
+
 
         ghostSize = monsters.size();
 
@@ -477,6 +486,7 @@ public class PacManBoard extends JPanel implements ActionListener {
         super.paintComponent(g);
 
         Graphics2D g2d = (Graphics2D) g;
+
         // drawing the obstacles.
         drawLevel(g2d);
 
@@ -484,17 +494,17 @@ public class PacManBoard extends JPanel implements ActionListener {
         // for the angle of the mouth of the pac-man pic.
         // if its open
 
-        //if(!ghostFading) {
-        if (isOpenMoth) {
-            g.drawImage(pacDirectionOpenMouth(), pacX, pacY, this);
-            isOpenMoth = false;
+        if (!ghostFading) {
+            if (isOpenMoth) {
+                g.drawImage(pacDirectionOpenMouth(), pacX, pacY, this);
+                isOpenMoth = false;
+            }
+            // if its closed
+            else {
+                g.drawImage(pacDirectionClosedMouth(), pacX, pacY, this);
+                isOpenMoth = true;
+            }
         }
-        // if its closed
-        else {
-            g.drawImage(pacDirectionClosedMouth(), pacX, pacY, this);
-            isOpenMoth = true;
-        }
-        // }
 
         // drawing monsters
 
@@ -521,7 +531,8 @@ public class PacManBoard extends JPanel implements ActionListener {
             startFadeTimer();
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
                     alpha));
-            doFade(g2d);
+
+            doFade(g2d, g);
 
 
         }
@@ -529,7 +540,7 @@ public class PacManBoard extends JPanel implements ActionListener {
 
     }
 
-    private void doFade(Graphics g2d) {
+    private void doFade(Graphics g2d, Graphics g) {
         float add = 0.005f;
         float alphaOffset = 0.005000812f;
 
@@ -566,15 +577,15 @@ public class PacManBoard extends JPanel implements ActionListener {
         }
 
 
-//        if (isOpenMoth) {
-//            g.drawImage(pacDirectionOpenMouth(), pacX, pacY, this);
-//            isOpenMoth = false;
-//        }
-//        // if its closed
-//        else {
-//            g.drawImage(pacDirectionClosedMouth(), pacX, pacY, this);
-//            isOpenMoth = true;
-//        }
+        if (isOpenMoth) {
+            g.drawImage(pacDirectionOpenMouth(), pacX, pacY, this);
+            isOpenMoth = false;
+        }
+        // if its closed
+        else {
+            g.drawImage(pacDirectionClosedMouth(), pacX, pacY, this);
+            isOpenMoth = true;
+        }
 
         repaint();
     }
@@ -617,7 +628,7 @@ public class PacManBoard extends JPanel implements ActionListener {
             while (true) {
 
 
-                if (ghostSize < 4) {
+                if (ghostSize < ghostsNumber) {
                     try {
                         Thread.sleep(5000);
                         initMonsters();
